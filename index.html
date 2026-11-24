@@ -81,6 +81,8 @@ footer .logo{color:#fff}
 [hidden]{display:none!important}
 html{color-scheme:dark}
 .hdr{padding-top:calc(20px + env(safe-area-inset-top,0px))}
+/* Product detail overlay: responsive mobile-first */
+.product-overlay{position:fixed;inset:0;z-index:55;background:#050505;overflow:auto;display:none}.product-overlay.open{display:block}.product-overlay .pback{padding:18px var(--pad);color:var(--mute);font-size:.85rem}.product-overlay .pgrid{display:grid;grid-template-columns:1fr;gap:24px;padding:0 var(--pad) 48px}.product-overlay .pgallery{display:grid;grid-template-columns:1fr 1fr;gap:8px}.product-overlay .pgallery img{width:100%;aspect-ratio:4/5;object-fit:contain;background:#101010}.product-overlay .pgallery img:first-child{grid-column:1/-1}.product-overlay .pinfo h1{font-size:clamp(2rem,6vw,3.5rem);margin:8px 0}.product-overlay .pprice{font-size:1.1rem;color:#aaa;margin:12px 0 20px}.product-overlay .pdesc{color:#aaa;margin:18px 0}.product-overlay .pqty{display:flex;align-items:center;border:1px solid #333;width:max-content;margin:18px 0}.product-overlay .pqty button{width:42px;height:42px}.product-overlay .pqty span{min-width:30px;text-align:center}.product-overlay .pinfo .btn{width:100%;margin:8px 0}.product-overlay .pclose{float:right;font-size:1.8rem;padding:10px}.product-overlay .pinfo{padding-bottom:25px}@media(min-width:800px){.product-overlay .pgrid{grid-template-columns:1.1fr .9fr;gap:40px;max-width:1250px;margin:auto}.product-overlay .pgallery{grid-template-columns:1fr 1fr}.product-overlay .pgallery img:first-child{grid-column:auto}.product-overlay .pinfo{position:sticky;top:25px;height:max-content;padding-top:20px}}
 </style></head>
 <body>
 <header class="hdr" id="top"></header>
@@ -182,5 +184,20 @@ function route(){const h=location.hash.slice(1),col=h==="collection";
  $("#home").hidden=col;$("#colpage").hidden=!col;$("#top").classList.toggle("solid",col);window.scrollTo(0,0);
  if(!col&&h&&h!=="home"){const t=document.getElementById(h);if(t)t.scrollIntoView()}}
 chrome();grids();hero();compare();addEventListener("hashchange",route);route();
+
+// Product page enhancement: cards open a dedicated, responsive details view.
+(()=>{
+ const photosById={1:["https://files.easy-orders.net/1778692656611627178.webp","https://files.easy-orders.net/1778692656594511153.webp"],2:["https://files.easy-orders.net/1778691758307075952.webp","https://files.easy-orders.net/1778691758175438381.webp"],3:["https://i.pinimg.com/1200x/26/db/f5/26dbf51d6827b642145ad21ab8117b23.jpg"],4:["https://i.pinimg.com/1200x/29/36/f6/2936f6abe36ae4a73924b7daaae28fab.jpg"],5:["https://i.pinimg.com/736x/5f/d7/bd/5fd7bdf8ae4104e4c2c382b28acfe62f.jpg"],6:["https://i.pinimg.com/1200x/05/87/1b/05871b8c133b9060f95cdd9c06094d1c.jpg"],7:["https://i.pinimg.com/736x/1c/fc/af/1cfcaf8b2453eeffb52492ca0246d09a.jpg"],8:["https://i.pinimg.com/736x/46/1d/fb/461dfb71ed8f2d894fb9b9f589822f24.jpg"]};
+ const overlay=document.createElement("main");overlay.className="product-overlay";overlay.id="productOverlay";document.body.appendChild(overlay);
+ const findWatch=name=>WATCHES.find(w=>w.name===name);
+ function showProduct(w){if(!w)return;const pics=photosById[w.id]||[];const gallery=pics.map(url=>'<img src="'+url+'" alt="'+w.name+'" loading="lazy">').join("");overlay.innerHTML='<button class="pclose" aria-label="Close details">×</button><a href="#collection" class="pback">← Back to watches</a><div class="pgrid"><div class="pgallery">'+gallery+'</div><div class="pinfo"><small>LAHZA / WATCHES</small><h1>'+w.name+'</h1><div class="pprice">EGP '+w.price.toLocaleString("en-US")+'</div><p class="pdesc">'+w.desc+'</p><p class="pdesc">Designed for everyday wear with a refined finish and comfortable fit.</p><div class="pqty"><button id="pqminus">−</button><span id="pqty">1</span><button id="pqplus">+</button></div><button class="btn" id="padd">Add to bag</button><button class="btn" id="pbuynow">Buy now</button></div></div>';
+ let qty=1;overlay.classList.add("open");document.body.style.overflow="hidden";overlay.scrollTop=0;overlay.querySelector(".pclose").onclick=close;overlay.querySelector(".pback").onclick=close;
+ overlay.querySelector("#pqminus").onclick=()=>{qty=Math.max(1,qty-1);overlay.querySelector("#pqty").textContent=qty};overlay.querySelector("#pqplus").onclick=()=>{overlay.querySelector("#pqty").textContent=++qty};
+ overlay.querySelector("#padd").onclick=()=>{for(let i=0;i<qty;i++)bag.add();close();};overlay.querySelector("#pbuynow").onclick=()=>{for(let i=0;i<qty;i++)bag.add();close();document.querySelector(".bag")?.click()};
+ }
+ function close(){overlay.classList.remove("open");document.body.style.overflow="";overlay.innerHTML=""}
+ document.addEventListener("click",e=>{if(overlay.classList.contains("open"))return;const card=e.target.closest(".card");if(!card||e.target.closest(".add"))return;const name=card.querySelector("h3")?.textContent?.trim();if(name){e.preventDefault();e.stopImmediatePropagation();showProduct(findWatch(name))}},true);
+ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&overlay.classList.contains("open"))close()});
+})();
 </script>
 </body></html>
