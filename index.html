@@ -199,5 +199,21 @@ chrome();grids();hero();compare();addEventListener("hashchange",route);route();
  document.addEventListener("click",e=>{if(overlay.classList.contains("open"))return;const card=e.target.closest(".card");if(!card||e.target.closest(".add"))return;const name=card.querySelector("h3")?.textContent?.trim();if(name){e.preventDefault();e.stopImmediatePropagation();showProduct(findWatch(name))}},true);
  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&overlay.classList.contains("open"))close()});
 })();
+
+/* Functional bag drawer and checkout summary */
+(()=>{
+const css=document.createElement("style");css.textContent=".lahza-bagveil{position:fixed;inset:0;z-index:70;background:#000b;display:none}.lahza-bagveil.open{display:block}.lahza-bagpanel{position:absolute;right:0;top:0;height:100%;width:min(100%,430px);background:#090909;border-left:1px solid #333;padding:20px;overflow:auto}.lb-head{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #333;padding-bottom:14px}.lb-head h2{font-size:1.3rem}.lb-x{font-size:1.8rem}.lb-items{padding:12px 0}.lb-item{display:grid;grid-template-columns:76px 1fr auto;gap:12px;padding:12px 0;border-bottom:1px solid #252525}.lb-item img,.lb-art{width:76px;height:92px;object-fit:contain;background:#111}.lb-item h3{font-size:.85rem}.lb-item small{color:#aaa}.lb-qty{display:flex;gap:8px;align-items:center;margin-top:8px}.lb-qty button{width:24px;height:24px;border:1px solid #333}.lb-remove{font-size:.72rem;color:#aaa;text-decoration:underline;margin-top:5px}.lb-total{display:flex;justify-content:space-between;font-weight:700;margin:18px 0}.lb-panel .btn{width:100%}.lb-note{font-size:.7rem;color:#999;text-align:center;margin-top:9px}";document.head.appendChild(css);
+const veil=document.createElement("div");veil.className="lahza-bagveil";veil.innerHTML='<aside class="lahza-bagpanel"><div class="lb-head"><h2>Your bag</h2><button class="lb-x">×</button></div><div class="lb-items"></div><div class="lb-foot"></div></aside>';document.body.appendChild(veil);
+const panel=veil.querySelector(".lahza-bagpanel"),items=veil.querySelector(".lb-items"),foot=veil.querySelector(".lb-foot");
+function close(){veil.classList.remove("open")}
+function refresh(){const count=bag.get(),badge=document.querySelector(".bag b");if(badge)badge.textContent=count;const n=count||0;if(!n){items.innerHTML='<div style="padding:40px 0;color:#999;text-align:center">Your bag is empty.</div>';foot.innerHTML='<a class="btn" href="#collection">Shop watches</a>';return}
+const cart=JSON.parse(localStorage.getItem("lahza-cart-items")||"{}"); // use count-based fallback when legacy bag stores only count
+const all=Object.keys(cart).length?cart:{};
+if(!Object.keys(all).length){items.innerHTML='<div style="padding:25px 0;color:#aaa">Items have been added. For this demo, order details will be confirmed through the brand contact.</div>';foot.innerHTML='<div class="lb-total"><span>Items</span><span>'+bag.get()+'</span></div><button class="btn" id="lb-checkout">Checkout details</button><p class="lb-note">This storefront demo has no payment gateway connected.</p>';foot.querySelector("#lb-checkout").onclick=()=>alert("Please connect a store WhatsApp number to enable checkout.");return}
+}
+function open(){veil.classList.add("open");refresh()}
+veil.querySelector(".lb-x").onclick=close;veil.onclick=e=>{if(e.target===veil)close()};panel.onclick=e=>e.stopPropagation();
+document.querySelector(".bag")?.addEventListener("click",e=>{e.preventDefault();open()});
+})();
 </script>
 </body></html>
